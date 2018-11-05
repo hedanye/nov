@@ -8,6 +8,7 @@ import com.minhao.nov.pojo.MmallUser;
 import com.minhao.nov.pojo.Product;
 import com.minhao.nov.service.IProductService;
 import com.minhao.nov.service.IUserService;
+import com.minhao.nov.vo.ProductDetailVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -64,14 +65,27 @@ public class ProductManageController {
         }
         return ServerResponse.createByErrorCode(ResponseCode.NEED_LOGIN.getCode(),"未登录");
 
-
-
-
-
-
     }
 
 
+
+
+    @RequestMapping(value = "detail.do",method = RequestMethod.POST)
+    public ServerResponse<ProductDetailVo> detail(HttpSession session, Integer productId){
+        MmallUser user= (MmallUser) session.getAttribute(Const.CURRENT_USER);
+        if (user!=null){
+            if (userService.checkAdminRole(user).isSuccess()){
+
+                return productService.detail(productId);
+
+            }else {
+                return ServerResponse.createByError("无权限");
+            }
+
+        }
+        return ServerResponse.createByErrorCode(ResponseCode.NEED_LOGIN.getCode(),"未登录");
+
+    }
 
 
 
