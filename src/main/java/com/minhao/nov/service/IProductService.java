@@ -19,6 +19,8 @@ public interface IProductService {
 
     ServerResponse<PageInfo> list(int pagenum, int pagesize);
 
+    ServerResponse<PageInfo> search(String productname,Integer productId,int pagenum,int pagesize);
+
 
 
 

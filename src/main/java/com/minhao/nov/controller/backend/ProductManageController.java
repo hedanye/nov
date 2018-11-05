@@ -110,7 +110,25 @@ public class ProductManageController {
     }
 
 
+    @RequestMapping(value = "search.do",method = RequestMethod.POST)
+    public ServerResponse search(HttpSession session,
+                                 String productName,
+                                 Integer productId,
+                                 @RequestParam(value = "pagesize",defaultValue = "10") int pagesize,
+                                 @RequestParam(value = "pagenum",defaultValue = "1") int pagenum){
+        MmallUser user= (MmallUser) session.getAttribute(Const.CURRENT_USER);
+        if (user!=null){
+            if (userService.checkAdminRole(user).isSuccess()){
 
+                return productService.search(productName,productId,pagenum,pagesize);
+            }else {
+                return ServerResponse.createByError("无权限");
+            }
+
+        }
+        return ServerResponse.createByErrorCode(ResponseCode.NEED_LOGIN.getCode(),"未登录");
+
+    }
 
 
 
