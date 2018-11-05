@@ -1,5 +1,6 @@
 package com.minhao.nov.service;
 
+import com.github.pagehelper.PageInfo;
 import com.minhao.nov.common.ServerResponse;
 import com.minhao.nov.pojo.Product;
 import com.minhao.nov.vo.ProductDetailVo;
@@ -16,6 +17,7 @@ public interface IProductService {
 
     ServerResponse<ProductDetailVo> detail(Integer productId);
 
+    ServerResponse<PageInfo> list(int pagenum, int pagesize);
 
 
 

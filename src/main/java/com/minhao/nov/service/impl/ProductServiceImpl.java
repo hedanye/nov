@@ -1,5 +1,8 @@
 package com.minhao.nov.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.minhao.nov.common.ResponseCode;
 import com.minhao.nov.common.ServerResponse;
 import com.minhao.nov.dao.CategoryMapper;
@@ -10,6 +13,7 @@ import com.minhao.nov.service.ICategoryService;
 import com.minhao.nov.service.IProductService;
 import com.minhao.nov.util.DateTimeUtil;
 import com.minhao.nov.vo.ProductDetailVo;
+import com.minhao.nov.vo.ProductListVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,6 +132,48 @@ public class ProductServiceImpl implements IProductService {
         return productDetailVo;
     }
 
+
+
+
+
+
+    public ServerResponse<PageInfo> list(int pagenum,int pagesize){
+        PageHelper.startPage(pagenum,pagesize);
+
+        List<Product> productList = productMapper.selectList();
+        List<ProductListVo> productListVos= Lists.newArrayList();
+        for (Product p :
+                productList) {
+            ProductListVo productListVo=assembList(p);
+            productListVos.add(productListVo);
+
+        }
+
+
+        PageInfo pageInfo=new PageInfo(productList);
+        pageInfo.setList(productListVos);
+        return ServerResponse.createBySuccess(pageInfo);
+
+
+
+
+    }
+
+
+
+
+    private ProductListVo assembList(Product product){
+        ProductListVo productListVo=new ProductListVo();
+        productListVo.setId(product.getId());
+        productListVo.setMainImage(product.getMainImage());
+        productListVo.setName(product.getName());
+        productListVo.setPrice(product.getPrice());
+        productListVo.setStatus(product.getStatus());
+        productListVo.setSubtitle(product.getSubtitle());
+        productListVo.setCategoryId(product.getCategoryId());
+        return productListVo;
+
+    }
 
 
 
