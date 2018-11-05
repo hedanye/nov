@@ -48,7 +48,28 @@ public class ProductManageController {
     }
 
 
+    @RequestMapping(value = "setStatus.do",method = RequestMethod.POST)
+    public ServerResponse<String> setStatus(HttpSession session,Integer productId,Integer status){
+        MmallUser user= (MmallUser) session.getAttribute(Const.CURRENT_USER);
+        if (user!=null){
+            if (userService.checkAdminRole(user).isSuccess()){
 
+                return productService.setStatus(productId,status);
+
+
+            }else {
+                return ServerResponse.createByError("无权限");
+            }
+
+        }
+        return ServerResponse.createByErrorCode(ResponseCode.NEED_LOGIN.getCode(),"未登录");
+
+
+
+
+
+
+    }
 
 
 

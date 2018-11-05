@@ -10,6 +10,8 @@ public interface IProductService {
 
     ServerResponse save( Product product);
 
+    ServerResponse<String> setStatus(Integer productId,Integer status);
+
 
 
 

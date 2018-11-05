@@ -51,11 +51,28 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.createByErrorCode(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getMsg());
 
 
+    }
 
+    @Override
+    public ServerResponse<String> setStatus(Integer productId,Integer status) {
+        if (productId==null || status==null){
+            return ServerResponse.createByErrorCode(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getMsg());
+        }
+
+        Product product=new Product();
+        product.setId(productId);
+        product.setStatus(status);
+        int count=productMapper.updateByPrimaryKeySelective(product);
+        if (count>0){
+            return ServerResponse.createBySuccess("修改成功");
+        }
+        return ServerResponse.createByError();
 
 
 
 
 
     }
+
+
 }
