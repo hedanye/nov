@@ -93,7 +93,7 @@ public class ProductManageController {
 
 
     @RequestMapping(value = "list.do",method = RequestMethod.POST)
-    public ServerResponse list(HttpSession session, @RequestParam(value = "pagesize",defaultValue = "10") int pagesize, @RequestParam(value = "pagenum",defaultValue = "1") int pagenum){
+    public ServerResponse<PageInfo> list(HttpSession session, @RequestParam(value = "pagesize",defaultValue = "10") int pagesize, @RequestParam(value = "pagenum",defaultValue = "1") int pagenum){
         MmallUser user= (MmallUser) session.getAttribute(Const.CURRENT_USER);
         if (user!=null){
             if (userService.checkAdminRole(user).isSuccess()){

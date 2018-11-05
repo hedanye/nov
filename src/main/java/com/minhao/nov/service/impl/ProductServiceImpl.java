@@ -3,6 +3,8 @@ package com.minhao.nov.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.minhao.nov.common.Const;
+import com.minhao.nov.common.ProductStatusEnum;
 import com.minhao.nov.common.ResponseCode;
 import com.minhao.nov.common.ServerResponse;
 import com.minhao.nov.dao.CategoryMapper;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -30,6 +33,9 @@ public class ProductServiceImpl implements IProductService {
 
     @Autowired
     private CategoryMapper categoryMapper;
+
+    @Autowired
+    private ICategoryService categoryService;
 
 
     @Override
@@ -207,14 +213,74 @@ public class ProductServiceImpl implements IProductService {
 
 
 
+    //前台
+    public ServerResponse<ProductDetailVo> qiantaidetail(Integer productId) {
+        if (productId==null){
+            return ServerResponse.createByErrorCode(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getMsg());
+        }
+        Product product=productMapper.selectByPrimaryKey(productId);
+        if (product.getStatus().intValue()!= ProductStatusEnum.ON_SALE.getCode()){
+            return ServerResponse.createByError("产品已下架");
+        }
+        if (product!=null){
+            ProductDetailVo productDetailVo=assembDetail(product);
+            return ServerResponse.createBySuccess(productDetailVo);
+        }
+        return ServerResponse.createByError("找不到产品");
 
 
 
+    }
+
+    @Override
+    public ServerResponse<PageInfo> list(String keyword, Integer categoryId, int pagesize, int pagenum,String orderBy) {
+        if (StringUtils.isBlank(keyword)||categoryId==null){
+            return ServerResponse.createByErrorCode(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getMsg());
+        }
 
 
+        List<Integer> categoryIdList=new ArrayList<>();
+
+        if (categoryId!=null){
+            Category category = categoryMapper.selectByPrimaryKey(categoryId);
+            if (category==null&&StringUtils.isBlank(keyword)){
+                PageHelper.startPage(pagenum,pagesize);
+                List<ProductListVo> productListVos = Lists.newArrayList();
+                PageInfo pageInfo=new PageInfo(productListVos);
+                return ServerResponse.createBySuccess(pageInfo);
+
+            }
+
+           categoryIdList = categoryService.selectCategoryAndChildrenById(category.getId()).getData();
+        }
+
+        if (StringUtils.isNotBlank(keyword)){
+            keyword=new StringBuilder().append("%").append(keyword).append("%").toString();
+        }
+
+        PageHelper.startPage(pagenum,pagesize);
+        if (StringUtils.isNotBlank(orderBy)){
+            if (Const.ProductListOrderBy.PRICE_ASC_DESC.contains(orderBy)){
+                String[] s = orderBy.split("_");
+                PageHelper.orderBy(s[0]+" "+s[1]);
+            }
+        }
+        List<Product> productList = productMapper.selectByNameAndCategoryIds(StringUtils.isBlank(keyword)?null:keyword, categoryIdList.size()==0?null:categoryIdList);
+        List<ProductListVo> productListVos= Lists.newArrayList();
+        for (Product p :
+                productList) {
+            ProductListVo productListVo=assembList(p);
+            productListVos.add(productListVo);
+
+        }
 
 
+        PageInfo pageInfo=new PageInfo(productList);
+        pageInfo.setList(productListVos);
+        return ServerResponse.createBySuccess(pageInfo);
 
+
+    }
 
 
 }
