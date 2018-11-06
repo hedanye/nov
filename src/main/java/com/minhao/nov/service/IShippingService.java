@@ -4,7 +4,6 @@ import com.github.pagehelper.PageInfo;
 import com.minhao.nov.common.ServerResponse;
 import com.minhao.nov.pojo.Shipping;
 
-import javax.servlet.http.HttpSession;
 
 
 public interface IShippingService {
