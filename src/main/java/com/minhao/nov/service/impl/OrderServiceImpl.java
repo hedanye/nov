@@ -224,7 +224,7 @@ public class OrderServiceImpl implements IOrderService {
 
 
 
-    public ServerResponse<PageInfo> search(Integer userId,long orderNo,int pagenum,int pagesize){
+    public ServerResponse<PageInfo> search(long orderNo,int pagenum,int pagesize){
 
         PageHelper.startPage(pagenum,pagesize);
         Order order = orderMapper.selectByOrderNo(orderNo);

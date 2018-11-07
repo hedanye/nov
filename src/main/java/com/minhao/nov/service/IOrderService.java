@@ -28,7 +28,7 @@ public interface IOrderService {
 
 
 
-    ServerResponse<PageInfo> search(Integer userId,long orderNo,int pagenum,int pagesize);
+    ServerResponse<PageInfo> search(long orderNo,int pagenum,int pagesize);
 
     ServerResponse<String> send_goods(long orderNo);
 
