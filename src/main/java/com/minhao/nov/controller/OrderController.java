@@ -35,7 +35,28 @@ public class OrderController {
 
 
 
+    @RequestMapping("cancel.do")
+    public ServerResponse<String> cancel(HttpSession session, long orderNo){
+        MmallUser user=(MmallUser) session.getAttribute(Const.CURRENT_USER);
+        if (user!=null){
+            return orderService.cancel(user.getId(),orderNo);
 
+        }
+        return ServerResponse.createByErrorCode(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getMsg());
+
+    }
+
+
+
+    @RequestMapping("get_order_cart_product.do")
+    public ServerResponse<String> getOrderCartProduct(HttpSession session){
+        MmallUser user=(MmallUser) session.getAttribute(Const.CURRENT_USER);
+        if (user!=null){
+            return orderService.getOrderCartProduct(user.getId());
+        }
+        return ServerResponse.createByErrorCode(ResponseCode.NEED_LOGIN.getCode(),ResponseCode.NEED_LOGIN.getMsg());
+
+    }
 
 
 

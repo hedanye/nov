@@ -1,16 +1,14 @@
 package com.minhao.nov.service.impl;
 
 import com.google.common.collect.Lists;
-import com.minhao.nov.common.OrderStatusEnum;
-import com.minhao.nov.common.PaymentTypeEnum;
-import com.minhao.nov.common.ProductStatusEnum;
-import com.minhao.nov.common.ServerResponse;
+import com.minhao.nov.common.*;
 import com.minhao.nov.dao.*;
 import com.minhao.nov.pojo.*;
 import com.minhao.nov.service.IOrderService;
 import com.minhao.nov.util.BigDecimalUtil;
 import com.minhao.nov.util.DateTimeUtil;
 import com.minhao.nov.vo.OrderItemVo;
+import com.minhao.nov.vo.OrderProductVo;
 import com.minhao.nov.vo.OrderVo;
 import com.minhao.nov.vo.ShippingVo;
 import org.apache.commons.collections.CollectionUtils;
@@ -93,6 +91,91 @@ public class OrderServiceImpl implements IOrderService {
 
 
     }
+
+    @Override
+    public ServerResponse<String> cancel(Integer userId, long orderNo) {
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
+        if (order!=null){
+            if (order.getStatus()!= OrderStatusEnum.NO_PAY.getCode()){
+                return ServerResponse.createByError("已付款 无法取消");
+            }
+            Order order1=new Order();
+            order1.setId(order.getId());
+            order1.setStatus(OrderStatusEnum.CANCEL.getCode());
+
+            int count=orderMapper.updateByPrimaryKeySelective(order1);
+            if (count>0){
+                return ServerResponse.createBySuccess();
+            }else {
+                return ServerResponse.createByError();
+            }
+        }
+        return ServerResponse.createByError("找不到该用户的订单");
+
+
+    }
+
+
+
+    public ServerResponse getOrderCartProduct(Integer userId){
+        OrderProductVo orderProductVo=new OrderProductVo();
+
+
+        List<Cart> cartList = cartMapper.selectCartByUserId(userId);
+       ServerResponse serverResponse= this.getCartOrderItem(userId,cartList);
+       if (!serverResponse.isSuccess()){
+            return serverResponse;
+       }
+       List<OrderItem> orderItemList= (List<OrderItem>) serverResponse.getData();
+
+       List<OrderItemVo> orderItemVoList=Lists.newArrayList();
+
+
+       BigDecimal bigDecimal=new BigDecimal("0");
+        for (OrderItem o :
+                orderItemList) {
+            bigDecimal = BigDecimalUtil.add(bigDecimal.doubleValue(), o.getTotalPrice().doubleValue());
+            orderItemVoList.add(assembOrderItem(o));
+        }
+
+        orderProductVo.setProductTotalPrice(bigDecimal);
+        orderProductVo.setOrderItemVoList(orderItemVoList);
+        return ServerResponse.createBySuccess(orderProductVo);
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private OrderVo assembOrderVo(Order order,List<OrderItem> orderItemList){
             OrderVo orderVo=new OrderVo();
