@@ -2,6 +2,8 @@ package com.minhao.nov.common;
 
 public enum OrderStatusEnum {
     NO_PAY(0,"未付款"),
+    PAY(2,"已付款"),
+    SHIPPED(3,"已发货"),
     CANCEL(1,"取消");
 
 

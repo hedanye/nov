@@ -1,5 +1,7 @@
 package com.minhao.nov.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.minhao.nov.common.*;
 import com.minhao.nov.dao.*;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -150,6 +153,117 @@ public class OrderServiceImpl implements IOrderService {
 
     }
 
+    @Override
+    public ServerResponse<OrderVo> detail(Integer userId, long orderNo) {
+
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
+        if (order!=null){
+            List<OrderItem> orderItemList = orderItemMapper.getByOrderNoUserId(orderNo, userId);
+            OrderVo orderVo = this.assembOrderVo(order, orderItemList);
+            return ServerResponse.createBySuccess(orderVo);
+        }
+        return ServerResponse.createByError("没有找到订单");
+
+    }
+
+
+    public ServerResponse<PageInfo> getList(Integer userId,int pagenum,int pagesize){
+
+        PageHelper.startPage(pagenum,pagesize);
+
+
+       List<Order> orderList= orderMapper.selectByUserId(userId);
+        List<OrderVo> orderVoList=this.assembOrderVo(orderList,userId);
+
+
+
+        PageInfo pageInfo=new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+        return ServerResponse.createBySuccess(pageInfo);
+
+
+
+    }
+
+
+
+
+    //backed
+
+    public ServerResponse<PageInfo> manageList(int pagenum,int pagesize){
+        PageHelper.startPage(pagenum,pagesize);
+        List<Order> orderList = orderMapper.selectAllOrder();
+        List<OrderVo> orderVoList = this.assembOrderVo(orderList, null);
+
+        PageInfo pageInfo=new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+        return ServerResponse.createBySuccess(pageInfo);
+
+
+
+    }
+
+
+
+
+    public ServerResponse<OrderVo> manageDetail(Integer userId,long orderNo){
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order!=null){
+
+            List<OrderItem> orderItemList = orderItemMapper.getByOrderNoUserId(orderNo, userId);
+            OrderVo orderVo = this.assembOrderVo(order, orderItemList);
+            return ServerResponse.createBySuccess(orderVo);
+
+
+        }else {
+            return ServerResponse.createByError("订单不存在");
+        }
+
+
+    }
+
+
+
+    public ServerResponse<PageInfo> search(Integer userId,long orderNo,int pagenum,int pagesize){
+
+        PageHelper.startPage(pagenum,pagesize);
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order!=null){
+
+            List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(orderNo);
+            OrderVo orderVo = this.assembOrderVo(order, orderItemList);
+
+            PageInfo pageInfo=new PageInfo(Lists.newArrayList(order));
+            pageInfo.setList(Lists.newArrayList(orderVo));
+            return ServerResponse.createBySuccess(pageInfo);
+        }else {
+            return ServerResponse.createByError("订单不存在");
+        }
+
+
+
+
+    }
+
+
+
+    public ServerResponse<String> send_goods(long orderNo){
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order!=null){
+            if (order.getStatus()==OrderStatusEnum.PAY.getCode()){
+                order.setStatus(OrderStatusEnum.SHIPPED.getCode());
+                order.setSendTime(new Date());
+                orderMapper.updateByPrimaryKeySelective(order);
+                return ServerResponse.createBySuccess("发货成功");
+            }
+
+
+
+        }
+        return ServerResponse.createByError("找不到订单");
+
+
+    }
 
 
 
@@ -159,6 +273,38 @@ public class OrderServiceImpl implements IOrderService {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private List<OrderVo> assembOrderVo(List<Order> orderList,Integer userId){
+        List<OrderVo> orderVoList=Lists.newArrayList();
+        for (Order o :
+                orderList) {
+            List<OrderItem> orderItemList=Lists.newArrayList();
+            if (userId==null){
+                orderItemList=orderItemMapper.getByOrderNo(o.getOrderNo());
+            }else {
+                orderItemList=orderItemMapper.getByOrderNoUserId(o.getOrderNo(),userId);
+            }
+            OrderVo orderVo=assembOrderVo(o,orderItemList);
+            orderVoList.add(orderVo);
+        }
+        return orderVoList;
+    }
 
 
 
