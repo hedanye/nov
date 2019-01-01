@@ -5,8 +5,10 @@ import com.minhao.nov.common.ServerResponse;
 import com.minhao.nov.pojo.MmallUser;
 import com.minhao.nov.service.IUserService;
 
+import com.minhao.nov.util.CookieUtil;
 import com.minhao.nov.util.JsonUtil;
 import com.minhao.nov.util.RedisPoolUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,11 +34,12 @@ public class UserController {
 
 
     @RequestMapping(value = "login.do",method = RequestMethod.POST)
-    public ServerResponse<MmallUser> login(HttpSession session, String username, String password){
+    public ServerResponse<MmallUser> login(HttpSession session, String username, String password,HttpServletResponse httpServletResponse){
 
         ServerResponse<MmallUser> response = userService.login(username, password);
         if (response.isSuccess()){
             //session.setAttribute(Const.CURRENT_USER,response.getData());
+            CookieUtil.writeLoginToken(httpServletResponse,session.getId());
             RedisPoolUtil.setEx(session.getId(), JsonUtil.obj2String(response.getData()), 60 * 30);
         }
 
@@ -44,8 +47,11 @@ public class UserController {
     }
 
     @RequestMapping(value = "loginOut.do",method = RequestMethod.GET)
-    public ServerResponse loginOut(HttpSession session){
-        session.removeAttribute(Const.CURRENT_USER);
+    public ServerResponse loginOut(HttpServletResponse httpServletResponse,HttpServletRequest request){
+        //session.removeAttribute(Const.CURRENT_USER);
+        String loginToken = CookieUtil.readToken(request);
+        CookieUtil.delToken(request,httpServletResponse);
+        RedisPoolUtil.del(loginToken);
         return ServerResponse.createBySuccess();
     }
 
@@ -65,8 +71,14 @@ public class UserController {
 
 
     @RequestMapping(value = "getUserInfo.do",method = RequestMethod.POST)
-    public ServerResponse getUserInfo(HttpSession session){
-        MmallUser user = (MmallUser) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse getUserInfo(HttpServletRequest request){
+        //MmallUser user = (MmallUser) session.getAttribute(Const.CURRENT_USER);
+        String loginToken=CookieUtil.readToken(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByError("未登录");
+        }
+        String userJsonStr=RedisPoolUtil.get(loginToken);
+        MmallUser user=JsonUtil.String2Obj(userJsonStr,MmallUser.class);
         if (user!=null){
             return ServerResponse.createBySuccess(user);
         }

@@ -23,6 +23,9 @@ public class Const {
         Set<String> PRICE_ASC_DESC= Sets.newHashSet("price_asc","price_desc");
     }
 
+    public interface RedisCachetime{
+        int SESSION_TIME=60*30;
+    }
 
 
 
