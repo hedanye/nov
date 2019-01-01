@@ -5,6 +5,8 @@ import com.minhao.nov.common.ServerResponse;
 import com.minhao.nov.pojo.MmallUser;
 import com.minhao.nov.service.IUserService;
 
+import com.minhao.nov.util.JsonUtil;
+import com.minhao.nov.util.RedisPoolUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +36,8 @@ public class UserController {
 
         ServerResponse<MmallUser> response = userService.login(username, password);
         if (response.isSuccess()){
-            session.setAttribute(Const.CURRENT_USER,response.getData());
+            //session.setAttribute(Const.CURRENT_USER,response.getData());
+            RedisPoolUtil.setEx(session.getId(), JsonUtil.obj2String(response.getData()), 60 * 30);
         }
 
         return response;
