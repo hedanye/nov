@@ -347,7 +347,6 @@ public class OrderServiceImpl implements IOrderService {
             orderVo.setPaymentTime(DateTimeUtil.dateToStr(order.getPaymentTime()));
             orderVo.setSendTime(DateTimeUtil.dateToStr(order.getSendTime()));
 
-
         for (OrderItem o :
                 orderItemList) {
                 orderItemVoList.add(this.assembOrderItem(o));

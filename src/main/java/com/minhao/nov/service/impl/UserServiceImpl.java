@@ -10,6 +10,7 @@ import com.minhao.nov.dao.UserMapper;
 import com.minhao.nov.pojo.MmallUser;
 import com.minhao.nov.service.IUserService;
 import com.minhao.nov.util.MD5Util;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
